@@ -47,6 +47,23 @@ void Room::outputRoomInfo() {
 	std::cout << this->desc << std::endl;
 }
 
+void Room::printObjects() {
+	for (int i = 0; i < objects.size(); i++) {
+		color(0x0e);
+		if ((objects[i]->objectData->isHidden == false) && objects[i]->shortDesc != "") {
+			std::cout << objects[i]->shortDesc << endl;
+		}
+		color();
+	}
+	for (int i = 0; i < people.size(); i++) {
+		color(0x0c);
+		if ((people[i]->personData->isHidden == false) && people[i]->shortDesc != "") {
+			std::cout << people[i]->shortDesc << endl;
+		}
+		color();
+	}
+}
+
 void Room::exitPrompt() {
 	std::cout << "\nExits:";
 	if (this->normalExits[NORTH]->to_room != nullptr && this->normalExits[NORTH]->isHidden == false) { std::cout << "N"; }
@@ -116,6 +133,53 @@ void Room::showScanDesc(Direction d) {
 		}
 	}
 	cout << this->normalExits[d]->desc << endl;
+	if (this->normalExits[d]->to_room != nullptr) {
+		for (int i = 0; i < this->normalExits[d]->to_room->people.size(); i++) {
+			if ((this->normalExits[d]->to_room->people[i]->personData->isHidden == false) && (this->normalExits[d]->to_room->people[i]->shortDesc != "")) {
+				color(0x0c);
+				std::cout << this->normalExits[d]->to_room->people[i]->shortDesc << std::endl;
+				color();
+			}
+		}
+	}
+}
+
+void Room::addDesc(Description* desc) {
+	this->descs.push_back(desc);
+}
+
+void Room::removeDesc(Description* desc) {
+	std::vector<Description*>::iterator it = find(this->descs.begin(), this->descs.end(), desc);
+	if (it != this->descs.end()) {
+		this->descs.erase(it);
+	}
+}
+
+void Room::addPerson(Person* person) {
+	this->people.push_back(person);
+}
+
+void Room::removePerson(Person* person) {
+	std::vector<Person*>::iterator it = find(this->people.begin(), this->people.end(), person);
+	if (it != this->people.end()) {
+		this->people.erase(it);
+	}
+}
+
+void Room::addObject(Object* object) {
+	this->objects.push_back(object);
+}
+
+void Room::removeObject(Object* object) {
+	std::vector<Object*>::iterator it = find(this->objects.begin(), this->objects.end(), object);
+	if (it != this->objects.end()) {
+		this->objects.erase(it);
+		return;
+	}
+}
+
+void Room::addExtraExit(Exit* exit) {
+	this->extraExits.push_back(exit);
 }
 
 
@@ -129,6 +193,7 @@ Exit::Exit(string desc, string moveDesc, bool isHidden, bool isDoor, bool isClos
 
 void Exit::setup(string desc, string moveDesc, bool isHidden, bool isDoor, bool isClosed, bool isLocked, int key_id, vector<string> nouns, Room* to_room) {
 	this->desc = desc;
+	this->moveDesc = moveDesc;
 	this->isHidden = isHidden;
 	this->isDoor = isDoor;
 	this->isClosed = isClosed;
@@ -140,4 +205,94 @@ void Exit::setup(string desc, string moveDesc, bool isHidden, bool isDoor, bool 
 
 void Exit::setDest(Room* room) {
 	this->to_room = room;
+}
+
+
+Description::Description() {
+	setup();
+}
+
+Description::Description(string name, vector<string> nouns, string description) {
+	setup(name, nouns, description);
+}
+
+void Description::setup(string name, vector<string> nouns, string description) {
+	this->name = name;
+	this->nouns = nouns;
+	this->description = description;
+}
+
+
+
+ObjectData::ObjectData() {
+	setup();
+}
+
+ObjectData::ObjectData(bool isHidden, bool canTake, bool canSee) {
+	setup(isHidden, canTake, canSee);
+}
+
+void ObjectData::setup(bool isHidden, bool canTake, bool canSee) {
+	this->isHidden = isHidden;
+	this->canTake = canTake;
+	this->canSee = canSee;
+}
+
+Object::Object() {
+	setup();
+}
+
+Object::Object(string name, string shortDesc, string longDesc, string useDesc, ObjectData* objectData, Object* in_obj, vector<Object*> contains, vector<string> nouns, vector<Description*> descs, map<string, int> specs) {
+	setup(name, shortDesc, longDesc, useDesc, objectData, in_obj, contains, nouns, descs, specs);
+}
+
+void Object::setup(string name, string shortDesc, string longDesc, string useDesc, ObjectData* objectData, Object* in_obj, vector<Object*> contains, vector<string> nouns, vector<Description*> descs, map<string, int> specs) {
+	this->name = name;
+	this->shortDesc = shortDesc;
+	this->longDesc = longDesc;
+	this->useDesc = useDesc;
+	this->objectData = objectData;
+	this->in_obj = in_obj;
+	this->contains = contains;
+	this->nouns = nouns;
+	this->descs = descs;
+	this->specs = specs;
+}
+
+void Object::addDesc(Description* desc) {
+	this->descs.push_back(desc);
+}
+
+Person::Person() {
+	setup();
+}
+
+Person::Person(string name, vector<string> nouns, string shortDesc, string longDesc, PersonData* personData, vector<Description*> descs, map<string, int> specs) {
+	setup(name, nouns, shortDesc, longDesc, personData, descs, specs);
+}
+
+void Person::setup(string name, vector<string> nouns, string shortDesc, string longDesc, PersonData* personData, vector<Description*> descs, map<string, int> specs) {
+	this->name = name;
+	this->nouns = nouns;
+	this->shortDesc = shortDesc;
+	this->longDesc = longDesc;
+	this->personData = personData;
+	this->descs = descs;
+	this->specs = specs;
+}
+
+void Person::addDesc(Description* desc) {
+	this->descs.push_back(desc);
+}
+
+PersonData::PersonData() {
+	setup();
+}
+
+PersonData::PersonData(bool isHidden) {
+	setup(isHidden);
+}
+
+void PersonData::setup(bool isHidden) {
+	this->isHidden = isHidden;
 }

@@ -22,10 +22,17 @@ class Program {
 		void setupFunctionMap();
 		void setupVariables();
 		void setupWorld();
-		int is_abbrev(string str, string substr);
+		void ignoreOutput(vector<string> v, int i);
 		void parseCommand(string userInput);
-		void do_move(vector<string> v);
+		void move(vector<string> v);
+		void look(vector<string> v);
+		void look_at(string noun);
+		void look_in(string noun);
 		void scan(vector<string> v);
+		void special(vector<string> v, int i);
+
+		// UTIL FUNCTIONS
+		int is_abbrev(string str, string substr);
 		string toLower(const string& val);
 
 		Room* m_ptrCurrentRoom;

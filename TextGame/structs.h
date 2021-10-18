@@ -51,8 +51,16 @@ struct Room {
 	void color(int color);
 	void outputRoomInfo();
 	void exitPrompt();
+	void printObjects();
 	void showScanDesc(Direction d);
 	int canGo(Direction d);
+	void addDesc(Description* desc);
+	void addPerson(Person* p);
+	void addObject(Object* o);
+	void removeDesc(Description* desc);
+	void removePerson(Person* p);
+	void removeObject(Object* o);
+	void addExtraExit(Exit* exit);
 };
 
 struct Exit {
@@ -75,10 +83,11 @@ struct Exit {
 struct ObjectData {
 	bool isHidden;				// Whether the object is hidden (in the room)
 	bool canTake;				// Whether the object can be picked up or not
+	bool canSee;				// If false, display "You do not see that here" when trying to take or look at this obj
 
 	ObjectData();
-	ObjectData(bool isHidden, bool canTake);
-	void setup(bool isHidden = false, bool canTake = false);
+	ObjectData(bool isHidden, bool canTake, bool canSee);
+	void setup(bool isHidden = false, bool canTake = false, bool canSee = true);
 };
 
 struct Object {
@@ -96,6 +105,7 @@ struct Object {
 	Object();
 	Object(string name, string shortDesc, string longDesc, string useDesc, ObjectData* objectData, Object* in_obj, vector<Object*> contains, vector<string> nouns, vector<Description*> descs, map<string, int> specs);
 	void setup(string name = "", string shortDesc = "", string longDesc = "", string useDesc = "", ObjectData* objectData = nullptr, Object* in_obj = nullptr, vector<Object*> contains = {}, vector<string> nouns = {}, vector <Description*> descs = {}, map<string, int> specs = {});
+	void addDesc(Description* desc);
 };
 
 struct PersonData {
@@ -108,6 +118,7 @@ struct PersonData {
 
 struct Person {
 	string name;				// e.g. Kylantha, the grizzled forelady
+	vector<string> nouns;		// Nouns to refer to this person
 	string shortDesc;			// e.g. A muscular forelady stands here, overseeing the construction work.
 	string longDesc;			// Desc when looking at the person
 	PersonData* personData;		// is hidden, etc.
@@ -115,6 +126,7 @@ struct Person {
 	map<string, int> specs;		// Special keywords (int is the special to fire)
 
 	Person();
-	Person(string name, string shortDesc, string longDesc, PersonData* personData, vector<Description*> descs, map<string, int> specs);
-	void setup(string name = "", string shortDesc = "", string longDesc = "", PersonData* personData = nullptr, vector<Description*> descs = {}, map<string, int> specs = {});
+	Person(string name, vector<string> nouns, string shortDesc, string longDesc, PersonData* personData, vector<Description*> descs, map<string, int> specs);
+	void setup(string name = "", vector<string> nouns = {}, string shortDesc = "", string longDesc = "", PersonData * personData = nullptr, vector<Description*> descs = {}, map<string, int> specs = {});
+	void addDesc(Description* desc);
 };

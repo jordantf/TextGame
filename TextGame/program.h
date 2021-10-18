@@ -8,9 +8,6 @@
 #include "structs.h"
 using namespace std;
 
-enum Direction { NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3, UP = 4, DOWN = 5 };
-
-
 class Program {
 	public:
 		Program();
@@ -21,10 +18,14 @@ class Program {
 		vector<Object*> playerInventory;
 
 	private:
+		void setupCommands();
 		void setupFunctionMap();
 		void setupVariables();
 		void setupWorld();
+		int is_abbrev(string str, string substr);
+		void parseCommand(string userInput);
 		void do_move(vector<string> v);
+		void scan(vector<string> v);
 		string toLower(const string& val);
 
 		Room* m_ptrCurrentRoom;

@@ -30,6 +30,18 @@ class Program {
 		void look_in(string noun);
 		void scan(vector<string> v);
 		void special(vector<string> v, int i);
+		void help(vector<string> v);
+		void handleHelp(string word);
+		void open(vector<string> v);
+		void handleOpen(string noun);
+		void close(vector<string> v);
+		void handleClose(string noun);
+		void get(vector<string> v);
+		void handleGet(string noun);
+		void drop(vector<string> v);
+		void handleDrop(string noun);
+		void inventory(vector<string> v);
+		void commandError();
 
 		// UTIL FUNCTIONS
 		int is_abbrev(string str, string substr);

@@ -44,7 +44,7 @@ void Program::run() {
 }
 
 void Program::setupCommands() {
-	commands = { "north", "east", "south", "west", "up", "down", "look", "scan" };
+	commands = { "north", "east", "south", "west", "up", "down", "look", "scan", "help", "open", "close", "get", "take", "drop", "inventory" };
 }
 
 
@@ -57,19 +57,13 @@ void Program::setupFunctionMap() {
 	functionMap["down"]			= &Program::move;
 	functionMap["look"]			= &Program::look;
 	functionMap["scan"]			= &Program::scan;
-	/*
 	functionMap["help"]			= &Program::help;
-	functionMap["look"]			= &Program::look;
-	functionMap["scan"]			= &Program::scan;
 	functionMap["open"]			= &Program::open;
 	functionMap["close"]		= &Program::close;
-	functionMap["inventory"]	= &Program::inventory;
-	functionMap["take"]			= &Program::get;
 	functionMap["get"]			= &Program::get;
+	functionMap["take"]			= &Program::get;
 	functionMap["drop"]			= &Program::drop;
-
-	functionMap["enter"]		= &Program::enter;
-	*/
+	functionMap["inventory"]	= &Program::inventory;
 }
 
 void Program::setupVariables() {
@@ -266,7 +260,8 @@ void Program::setupWorld() {
 		"many workers on site and ensuring all workplace safety measures are\n"
 		"followed to the letter. While she is evidently comfortable getting down and\n"
 		"dirty with it when necessary, she seems rather reserved today and appears\n"
-		"content watching her team work from a distance.";
+		"content watching her team work from a distance, but she may be willing to\n"
+		"speak with you should you say hello to her kindly.";
 
 	string vagrantLDesc5 =
 		"This man certainly looks like he has seen better days. Flies buzz\n"
@@ -364,6 +359,13 @@ void Program::setupWorld() {
 	Description* desc5 = new Description("some street junkies", { "junkies" }, junkiesDesc2);
 	Description* desc6 = new Description("the shredded posters and advertisements", { "writing", "words", "poster", "posters", "shredded", "torn", "ads", "ad", "advertisements", "advertisement" }, "The words on the shredded pages are no longer legible.");
 	Description* desc7 = new Description("a narrow alleyway", { "alley", "alleyway", "lane" }, alleyDesc2);
+	Description* desc8 = new Description("the garbage scattered around", { "trash", "garbage" }, trashDesc5);
+	Description* desc9 = new Description("the brick wall of a nearby building", { "wall", "walls", "graffiti" }, wallDesc5);
+	Description* desc10 = new Description("the discolored letter", { "letter", "lettering", "letters", "discolored", "discoloration", "discolor" }, letterDesc5);
+	Description* desc11 = new Description("the artist's name", { "name" }, "The name of the artist has been spelled out here. It reads, \"Jordan\".");
+	Description* desc12 = new Description("the cleverly concealed door", { "door" }, doorDesc5);
+
+	//
 
 	room0->addDesc(desc0);
 	room0->addDesc(desc1);
@@ -379,18 +381,28 @@ void Program::setupWorld() {
 	room2->addDesc(desc5);
 	room2->addDesc(desc6);
 	room2->addDesc(desc7);
+	room5->addDesc(desc8);
+	room5->addDesc(desc9);
+	room5->addDesc(desc10);
+	room5->addDesc(desc11);
+	room5->addDesc(desc12);
 
 	// OBJECT CREATION
 	ObjectData* default_object_data = new ObjectData(false, false, true);
-	Object* obj0 = new Object("a flickering street lamp", "A barely functional street lamp flickers in the sunlight.", lampDesc2, "", default_object_data, nullptr, {}, { "lamp", "flickering", "light" }, { desc5 }, {});
+	Object* obj0 = new Object("a flickering street lamp", "A barely functional street lamp flickers in the sunlight.", lampDesc2, "", default_object_data, nullptr, {}, { "lamp", "flickering", "light" }, {}, {});
+	Object* obj1 = new Object("an overflowing dumpster", "A dumpster lies here, completely overflowing with trash.", dumpsterDesc5, "", default_object_data, nullptr, {}, { "dumpster" }, {}, {});
 
 	room2->addObject(obj0);
+	room5->addObject(obj1);
 
 	// NPC CREATION
 	PersonData* default_person_data = new PersonData(false);
 	Person* person0 = new Person("Kylantha, the grizzled forelady", { "kylantha", "woman", "lady", "forelady", "forewoman", "foreman", "muscular", "grizzled" }, kylanthaSDesc, kylanthaLDesc, default_person_data, {}, {});
+	Person* person1 = new Person("the vagrant in the alley", { "vagrant", "prostitute", "disheveled", "junkie", "man", "ragged" }, "A scruffy man with overgrown hair is here, keeping to himself.", vagrantLDesc5, default_person_data, {}, {});
+
 
 	room1->addPerson(person0);
+	room5->addPerson(person1);
 
 	// EXTRA EXIT CREATION
 	room2->addExtraExit(exit2a);
@@ -409,6 +421,9 @@ void Program::setupWorld() {
 	// SPEC CREATION
 	room2->specs["enter"]	= 1;
 	room1->specs["say"] = 0;
+	obj1->specs["whiff"] = 2;
+	obj1->specs["smell"] = 2;
+	obj1->specs["sniff"] = 2;
 
 	// STARTING ROOM
 	m_ptrCurrentRoom = room0;
@@ -829,22 +844,431 @@ void Program::special(vector<string> v, int i) {
 		break;
 		}
 		case 1: {
-			if (v.size() == 2) {
+			if (v.size() > 1) {
+				if (v.size() > 2) {
+					ignoreOutput(v, 2);
+				}
 				std::vector<string>::iterator it = find(m_ptrCurrentRoom->extraExits[0]->nouns.begin(), m_ptrCurrentRoom->extraExits[0]->nouns.end(), v[1]);
 				if (it != m_ptrCurrentRoom->extraExits[0]->nouns.end()) {
 					std::cout << "\n" << m_ptrCurrentRoom->extraExits[0]->moveDesc << endl;
 					m_ptrCurrentRoom = m_ptrCurrentRoom->extraExits[0]->to_room;
 					moved = true;
-					return;
+					break;
 				} else {
-					std::cout << "Huh?!" << endl;
+					std::cout << "\nYou can't seem to find what you're trying to enter." << endl;
+					break;
+				}
+			}
+			else {
+				std::cout << "\nEnter what?" << endl;
+				break;
+			}
+		}
+		case 2: {
+			if (v.size() == 2) {
+				if ((v[1] == "trash") || (v[1] == "dumpster")) {
+					std::cout <<
+						"\nYou foolishly take a whiff of the trash! The stench is so overpowering\n"
+						"that you fall over, unconscious. The vagrant, sensing weakness, swiftly\n"
+						"moves in for the kill."
+						<< endl;
+					m_ptrCurrentRoom->roomData->isDeathTrap = true;
 					return;
 				}
-			} else {
-				std::cout << "Huh?!" << endl;
+				else {
+					commandError();
+					return;
+				}
+			}
+			else {
+				commandError();
 				return;
 			}
 		}
 	}
 }
 
+void Program::commandError() {
+	std::cout <<
+		"\nCommand error. Either your command was not recognized, has invalid\n"
+		"arguments (in text, or in number), or this is not the place to try it."
+		<< endl;
+	return;
+}
+
+void Program::help(vector<string> v) {
+	if (v.size() > 1) {
+		if (v.size() > 2) {
+			ignoreOutput(v, 2);
+		}
+		handleHelp(v[1]);
+	}
+	else {
+		std::cout << std::endl <<
+			"The general commands available to you are:\n\n"
+			"    LOOK, SCAN, NORTH, EAST, SOUTH, WEST, UP, DOWN,\n"
+			"    OPEN, CLOSE, INVENTORY, GET, and DROP.\n\n"
+			"To get more information on a particular command, type 'HELP [COMMAND].\n\n"
+
+			"There are other commands, generally of the form [VERB] [NOUN], however\n"
+			"these must be discovered on your own. Use your imagination, and don't\n"
+			"forget to have fun!"
+			<< std::endl;
+	}
+}
+
+void Program::handleHelp(string word) {
+	int to_exec = -1;
+	for (int i = 0; i < commands.size(); i++) {
+		if (is_abbrev(commands[i], word)) {
+			to_exec = i;
+			break;
+		}
+	}
+
+	switch (to_exec) {
+		case -1: {
+			std::cout << std::endl << "There is no help on that topic.\n" << std::endl;
+			break;
+		}
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5: { // 0-5 are directional commands N E S W U D
+			std::cout << std::endl <<
+				"The compass directional commands each move your character in the specified\n"
+				"direction, assuming there is an exit in that direction. Normally, visible\n"
+				"exits from your character's current position are displayed in the 'exits'\n"
+				"prompt below the room description, but there may occasionally be hidden\n"
+				"exits or doors that you will need to uncover, that may not be displayed."
+				<< std::endl;
+			break;
+		}
+		case 6: { // look
+			std::cout << std::endl <<
+				"LOOK allows you investigate certain objects more closely. If you specify an\n"
+				"object to look at, for example, 'LOOK CLOCK', you may sometimes be able to\n"
+				"glean more information about it. Specifying no object to look at will have\n"
+				"you look at your surroundings in general."
+				<< std::endl;
+			break;
+		}
+		case 7: { // scan
+			std::cout << std::endl <<
+				"SCAN allows you to look at the areas immediately surrounding the area you\n"
+				"are currently in. Your character will take a brief glance in every\n"
+				"direction, and report (very briefly) what they see to you. Often times,\n"
+				"scanning your surroundings from further away can be key to discovering\n"
+				"things that were not immediately apparent, even from up close."
+				<< std::endl;
+			break;
+		}
+		case 8: { // help
+			std::cout << std::endl <<
+				"You probably don't need much help to figure out what this command does.\n";
+			break;
+		}
+		case 9:
+		case 10: { // 9 is open and 10 is close
+			std::cout << std::endl <<
+				"The OPEN and CLOSE commands do exactly what they say: open and close\n"
+				"things. These will generally be things that can be opened and closed, such\n"
+				"as doors, gates, boxes, or other containers, but not always!"
+				<< std::endl;
+			break;
+		}
+		case 11: 
+		case 12: { // 11 is get and 12 is take
+			std::cout << std::endl <<
+				"The GET (or TAKE) command lets you pick up items you come across, adding\n"
+				"them to your INVENTORY (HELP INVENTORY). Items that can be picked up are\n"
+				"displayed below the room description in yellow text. Occasionally, there\n"
+				"may also be items that can be picked up that are not displayed - you will\n"
+				"have to look closely to find them! Should you get tired of carrying all\n"
+				"those items around, you can always DROP an item back down to the ground.\n\n"
+				"You may also type 'GET ALL' to attempt to pick up all the items in a room,\n"
+				"but hidden items will not be picked up in this way. You must explicitly\n"
+				"specify such items if you want to pick them up."
+				<< std::endl;
+			break;
+		}
+		case 13: { // drop
+			std::cout << std::endl <<
+				"If you get tired of carrying a particular item (or items) around, you can\n"
+				"always DROP the item to remove it from your inventory. The dropped item(s)\n"
+				"will remain on the floor of the room in which they were dropped, and can be\n"
+				"picked up with GET or TAKE again later, should you change your mind."
+				<< std::endl;
+			break;
+		}
+		case 14: { // inv
+			std::cout << std::endl <<
+				"The INVENTORY command lists all the items you are carrying. If you get\n"
+				"tired of carrying something, you can always DROP it to get rid of it."
+				<< std::endl;
+			return;
+		}
+	}
+}
+
+void Program::open(vector<string> v) {
+	if (v.size() > 1) {
+		if (v[1] == "the") {
+			if (v.size() > 2) {
+				if (v.size() > 3) {
+					ignoreOutput(v, 3);
+				}
+				handleOpen(v[2]);
+			}
+			else {
+				std::cout << "\nOpen what?" << endl;
+			}
+		}
+		else {
+			if (v.size() > 2) {
+				ignoreOutput(v, 2);
+			}
+			handleOpen(v[1]);
+		}
+	}
+	else {
+		std::cout << "\nOpen what?" << endl;
+	}
+}
+
+void Program::handleOpen(string noun) {
+	for (int i = 0; i < 6; i++) { // normal exit opening
+		if (m_ptrCurrentRoom->normalExits[i] != nullptr) {
+			for (int j = 0; j < m_ptrCurrentRoom->normalExits[i]->nouns.size(); j++) {
+				if (m_ptrCurrentRoom->normalExits[i]->nouns[j] == noun) {
+					if (m_ptrCurrentRoom->normalExits[i]->isDoor) {
+						if (m_ptrCurrentRoom->normalExits[i]->isClosed) {
+							if (m_ptrCurrentRoom->normalExits[i]->isLocked) {
+								std::cout << "\nThe " << noun << " seems to be locked." << endl;
+								return;
+							}
+							else {
+								m_ptrCurrentRoom->normalExits[i]->isClosed = false;
+								std::cout << "\nOk." << endl; // change to allow exits to have desc vector
+								return;
+							}
+						}
+						else {
+							std::cout << "\nThe " << noun << " is already open." << endl;
+							return;
+						}
+					}
+					else {
+						std::cout << "\nThere is no " << noun << " here." << endl;
+						return;
+					}
+				}
+			}
+		}
+	}
+}
+
+void Program::close(vector<string> v) {
+	if (v.size() > 1) {
+		if (v[1] == "the") {
+			if (v.size() > 2) {
+				if (v.size() > 3) {
+					ignoreOutput(v, 3);
+				}
+				handleClose(v[2]);
+			}
+			else {
+				std::cout << "\nClose what?" << endl;
+			}
+		}
+		else {
+			if (v.size() > 2) {
+				ignoreOutput(v, 2);
+			}
+			handleClose(v[1]);
+		}
+	}
+	else {
+		std::cout << "\nClose what?" << endl;
+	}
+}
+
+void Program::handleClose(string noun) {
+	for (int i = 0; i < 6; i++) { // normal exit opening
+		for (int j = 0; j < m_ptrCurrentRoom->normalExits[i]->nouns[j].size(); j++) {
+			if (m_ptrCurrentRoom->normalExits[i]->nouns[j] == noun) {
+				if (m_ptrCurrentRoom->normalExits[i]->isDoor) {
+					if (m_ptrCurrentRoom->normalExits[i]->isClosed == false) {
+						std::cout << "\nOk." << endl;
+						m_ptrCurrentRoom->normalExits[i]->isClosed = true;
+						return;
+					}
+					else {
+						std::cout << "\nThe " << noun << " is already closed." << endl;
+						return;
+					}
+				}
+				else {
+					std::cout << "\nThere is no " << noun << " here." << endl;
+				}
+			}
+		}
+	}
+}
+
+void Program::get(vector<string> v) {
+	// TODO: Handle
+	// get the X from the Y
+	// get the X from Y
+	// get the X the Y
+	// get the X Y
+	// get X from the Y
+	// get X from Y
+	// get X the Y
+	// get X Y
+	// get X
+	if (v.size() > 1) {
+		if (v[1] == "the") {
+			if (v.size() > 2) {
+				if (v.size() > 3) {
+					ignoreOutput(v, 3);
+				}
+				handleGet(v[2]);
+			}
+			else {
+				std::cout << "\nGet what?" << endl;
+			}
+		}
+		else {
+			if (v.size() > 2) {
+				ignoreOutput(v, 2);
+			}
+			handleGet(v[1]);
+		}
+	}
+	else {
+		std::cout << "\nGet what?" << endl;
+	}
+}
+
+void Program::handleGet(string noun) {
+	if (noun == "all") {
+		int count = 0;
+		for (int i = 0; i < m_ptrCurrentRoom->objects.size(); i++) {
+			if (m_ptrCurrentRoom->objects[i]->objectData->isHidden == false) {
+				count++;
+				if (m_ptrCurrentRoom->objects[i]->objectData->canTake == true) {
+					std::cout << "\nYou get " << m_ptrCurrentRoom->objects[i]->name << "." << endl;
+					playerInventory.push_back(m_ptrCurrentRoom->objects[i]);
+					m_ptrCurrentRoom->removeObject(m_ptrCurrentRoom->objects[i]);
+				}
+				else {
+					std::cout << "\nYou can't seem to get " << m_ptrCurrentRoom->objects[i]->name << "." << endl;
+				}
+			}
+		}
+		if (count == 0) {
+			std::cout << "\nYou can't seem to find anything to pick up." << std::endl;
+		}
+	}
+	else {
+		for (int i = 0; i < m_ptrCurrentRoom->objects.size(); i++) {
+			for (int j = 0; j < m_ptrCurrentRoom->objects[i]->nouns.size(); j++) {
+				if (m_ptrCurrentRoom->objects[i]->nouns[j] == noun) {
+					if (m_ptrCurrentRoom->objects[i]->objectData->canTake == true) {
+						std::cout << "\nYou get " << m_ptrCurrentRoom->objects[i]->name << "." << endl;
+						playerInventory.push_back(m_ptrCurrentRoom->objects[i]);
+						m_ptrCurrentRoom->removeObject(m_ptrCurrentRoom->objects[i]);
+						return;
+					}
+					else {
+						std::cout << "\nYou can't pick that up." << endl;
+						// std::cout << "\nYou can't seem to get " << m_ptrCurrentRoom->objects[i]->name << "." << endl;
+						return;
+					}
+				}
+			}
+		}
+		std::cout << "\nYou do not see that here." << endl;
+	}
+}
+
+void Program::drop(vector<string> v) {
+	if (v.size() > 1) {
+		if (v[1] == "the") {
+			if (v.size() > 2) {
+				if (v.size() > 3) {
+					ignoreOutput(v, 3);
+				}
+				handleDrop(v[2]);
+			}
+			else {
+				std::cout << "\nDrop what?" << endl;
+			}
+		}
+		else {
+			if (v.size() > 2) {
+				ignoreOutput(v, 2);
+			}
+			handleDrop(v[1]);
+		}
+	}
+	else {
+		std::cout << "\nDrop what?" << endl;
+	}
+}
+
+void Program::handleDrop(string noun) {
+	if (noun == "all") {
+		if (playerInventory.size() >= 1) {
+			for (int i = 0; i < playerInventory.size(); i++) {
+				std::cout << "\nYou drop " << playerInventory[i]->name << "." << endl;
+				Object* o = playerInventory[i];
+				// Dropping an item that was previously hidden does not re-hide the item.
+				o->objectData->isHidden = false;
+				m_ptrCurrentRoom->objects.push_back(o);
+				std::vector<Object*>::iterator it = find(playerInventory.begin(), playerInventory.end(), playerInventory[i]);
+				if (it != playerInventory.end()) {
+					playerInventory.erase(it);
+				}
+			}
+		}
+		else {
+			std::cout << "\nYou aren't carrying anything." << endl;
+		}
+	}
+	else {
+		for (int i = 0; i < playerInventory.size(); i++) {
+			for (int j = 0; j < playerInventory[i]->nouns.size(); j++) {
+				if (playerInventory[i]->nouns[j] == noun) {
+					std::cout << "\nYou drop " << playerInventory[i]->name << "." << endl;
+					Object* o = playerInventory[i];
+					// Dropping an item that was previously hidden does not re-hide the item.
+					o->objectData->isHidden = false;
+					m_ptrCurrentRoom->objects.push_back(o);
+					std::vector<Object*>::iterator it = find(playerInventory.begin(), playerInventory.end(), playerInventory[i]);
+					if (it != playerInventory.end()) {
+						playerInventory.erase(it);
+						return;
+					}
+					return;
+				}
+			}
+		}
+		std::cout << "\nYou aren't carrying that." << endl;
+	}
+}
+
+void Program::inventory(vector<string> v) {
+	if (playerInventory.size() == 0) {
+		std::cout << "\nYou aren't carrying anything." << endl;
+	}
+	else {
+		std::cout << "\nYou are carrying:" << endl;
+		for (int i = 0; i < playerInventory.size(); i++) {
+			std::cout << playerInventory[i]->name << endl;
+		}
+	}
+}

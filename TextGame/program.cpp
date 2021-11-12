@@ -260,8 +260,8 @@ void Program::setupWorld() {
 		"many workers on site and ensuring all workplace safety measures are\n"
 		"followed to the letter. While she is evidently comfortable getting down and\n"
 		"dirty with it when necessary, she seems rather reserved today and appears\n"
-		"content watching her team work from a distance, but she may be willing to\n"
-		"speak with you should you say hello to her kindly.";
+		"content watching her team work from a distance. She may, however, be\n"
+		"willing to speak with you should you say hello to her kindly...";
 
 	string vagrantLDesc5 =
 		"This man certainly looks like he has seen better days. Flies buzz\n"
@@ -333,8 +333,8 @@ void Program::setupWorld() {
 
 	// ROOM CREATION
 	RoomData* default_room_data = new RoomData(false, false, 1);
-	Room* room0 = new Room("Hastings1", rdesc0, default_room_data, exitArray0, {}, {}, {}, {}, {});
-	Room* room1 = new Room("Hastings2", rdesc1, default_room_data, exitArray1, {}, {}, {}, {}, {});
+	Room* room0 = new Room("Hastings", rdesc0, default_room_data, exitArray0, {}, {}, {}, {}, {});
+	Room* room1 = new Room("Hastings", rdesc1, default_room_data, exitArray1, {}, {}, {}, {}, {});
 	Room* room2 = new Room("East Hastings", rdesc2, default_room_data, exitArray2, {}, {}, {}, {}, {});
 	Room* room3 = new Room("Main and Hastings", rdesc3, default_room_data, exitArray3, {}, {}, {}, {}, {});
 	Room* room5 = new Room("A Dark Alleyway", rdesc5, default_room_data, exitArray5, {}, {}, {}, {}, {});
